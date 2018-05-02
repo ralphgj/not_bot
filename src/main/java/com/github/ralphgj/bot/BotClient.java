@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -101,6 +102,10 @@ public class BotClient {
     }
 
     private Text handleMessage(Message message) {
+        int chatId = message.getChat().getId();
+        TextBuilder builder = Text.builder()
+                .chatId(chatId)
+                .originMessageId(message.getMessageId());
         Text text = null;
         String plainText = "";
         if (CollectionUtils.isNotEmpty(message.getEntities())) {
@@ -112,14 +117,16 @@ public class BotClient {
                 if (command.equals("/coin")) {
                     plainText = handleCoinCommand(content);
                 } else if(command.equals("/watch")) {
-                    watchTasks.put(message.getFrom().getId(), content);
+                    watchTasks.put(chatId, content);
+                    plainText = handleCoinCommand(content);
                 } else if(command.equals("/no_watch")) {
-                    watchTasks.remove(message.getFrom().getId());
-                } else if(command.equals("/help")) {
+                    watchTasks.remove(chatId);
+                } else if(command.equals("/help") || command.equals("/start")) {
                     plainText = new StringBuilder()
+                            .append("/start: 见 /help\n")
                             .append("/help: 获取帮助\n")
                             .append("/coin: 查询币种, 如, \"/coin btc,eth_btc,eos_btc\", 默认查询对usdt交易\n")
-                            .append("/watch: 定时推送订阅币种, 如, \"/watch  btc,eth_btc,eos_btc\", 每5分钟推送一次\n")
+                            .append("/watch: 定时推送订阅币种, 如, \"/watch  btc,eth_btc,eos_btc\", 每5分钟推送一次, 默认查询对usdt交易\n")
                             .append("/no_watch: 移除推送\n")
                             .toString();
                 } else {
@@ -129,15 +136,15 @@ public class BotClient {
         } else {
             plainText = message.getText();
         }
-        TextBuilder builder = Text.builder()
-                .chatId(message.getFrom().getId())
-                .text(plainText)
-                .originMessageId(message.getMessageId());
-        text = builder.build();
+        text = builder.text(plainText)
+                .build();
         return text;
     }
 
     private String handleCoinCommand(String content) {
+        if (StringUtils.isEmpty(content)) {
+            content = "btc,eth";
+        }
         List<String> symbols = Arrays.asList(content.split(","));
         StringBuilder builder = new StringBuilder();
         symbols.parallelStream()

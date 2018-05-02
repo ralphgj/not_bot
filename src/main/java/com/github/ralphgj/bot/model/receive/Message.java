@@ -25,4 +25,6 @@ public class Message {
     private String text;
 
     private List<MessageEntity> entities;
+
+    private Chat chat;
 }
