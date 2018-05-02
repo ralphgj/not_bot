@@ -1,5 +1,6 @@
 package com.github.ralphgj.coin.model.send;
 
+import com.github.ralphgj.coin.model.recieve.BinanceLatest;
 import com.github.ralphgj.coin.model.recieve.GateIOLatest;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,23 +21,31 @@ public class LatestPrice {
     private String symbol;
 
     // 最新成交价
-    private double latestPrice;
+    private double gateIOLatestPrice;
+    private double binanceLatestPrice;
 
     // 涨跌百分比
-    private double percentChange;
+    private double gateIOPercentChange;
+    private double binancePercentChange;
 
     // 24小时最高价
-    private double high24Price;
+    private double gateIOHigh24Price;
+    private double binanceHigh24Price;
 
     // 24小时最低价
-    private double low24Price;
+    private double gateIOLow24Price;
+    private double binanceLow24Price;
 
-    public LatestPrice(String symbol, GateIOLatest latest) {
+    public LatestPrice(String symbol, GateIOLatest gateIOLatest, BinanceLatest binanceLatest) {
         this.symbol = symbol;
-        this.latestPrice = latest.getLast();
-        this.percentChange = latest.getPercentChange();
-        this.high24Price = latest.getHigh24hr();
-        this.low24Price = latest.getLow24hr();
+        this.gateIOLatestPrice = gateIOLatest.getLast();
+        this.gateIOPercentChange = gateIOLatest.getPercentChange();
+        this.gateIOHigh24Price = gateIOLatest.getHigh24hr();
+        this.gateIOLow24Price = gateIOLatest.getLow24hr();
+        this.binanceLatestPrice = binanceLatest.getLastPrice();
+        this.binancePercentChange = binanceLatest.getPriceChangePercent();
+        this.binanceHigh24Price = binanceLatest.getHighPrice();
+        this.binanceLow24Price = binanceLatest.getLowPrice();
     }
 
     @Override
@@ -48,20 +57,23 @@ public class LatestPrice {
         StringBuilder builder = new StringBuilder();
         builder.append(symbol.toUpperCase())
                 .append(":\n")
-                .append("最新成交价：")
-                .append(numberFormat.format(latestPrice))
+                .append("最新成交价: ")
+                .append("Gate -> " + numberFormat.format(gateIOLatestPrice) + ", ")
+                .append("币安 -> " + numberFormat.format(binanceLatestPrice))
                 .append("\n")
                 .append("涨跌百分比: ")
-                .append(numberFormat.format(percentChange))
-                .append("%")
+                .append("Gate -> " + numberFormat.format(gateIOPercentChange) + "%, ")
+                .append("币安 -> " + numberFormat.format(binancePercentChange) + "%")
                 .append("\n")
                 .append("24小时最高价: ")
-                .append(numberFormat.format(high24Price))
+                .append("Gate -> " + numberFormat.format(gateIOHigh24Price) + ", ")
+                .append("币安 -> " + numberFormat.format(binanceHigh24Price))
                 .append("\n")
                 .append("24小时最低价: ")
-                .append(numberFormat.format(low24Price))
+                .append("Gate -> " + numberFormat.format(gateIOLow24Price) + ", ")
+                .append("币安 -> " + numberFormat.format(binanceLow24Price))
                 .append("\n")
-                .append("==================");
+                .append("===============================\n");
         return builder.toString();
     }
 }

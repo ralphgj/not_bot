@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -85,24 +86,47 @@ public class BotClient {
     }
 
     private Text handleMessage(Message message) {
-        TextBuilder builder = Text.builder();
+        Text text = null;
+        String plainText = "";
         if (CollectionUtils.isNotEmpty(message.getEntities())) {
             MessageEntity messageEntity = message.getEntities().get(0);
             if (messageEntity.getType().equals(MessageEntityType.BOT_COMMAND.getType())) {
-                String symbol = message.getText()
-                        .substring(messageEntity.getOffset() + messageEntity.getLength(),
-                                message.getText().length());
-                LatestPrice latestPrice = coinClient.getLatestPrice(symbol);
-                builder.chatId(message.getFrom().getId())
-                        .text(latestPrice.toString())
-                        .originMessageId(message.getMessageId());
+                String command = message.getText().substring(messageEntity.getOffset(), messageEntity.getLength());
+                String content = message.getText().substring(command.length());
+                if (command.trim().equals("/coin")) {
+                    plainText = handleCoinCommand(content);
+                } else {
+                    plainText = "Not support the command!";
+                }
             }
         } else {
-            builder.chatId(message.getFrom().getId())
-                    .text(message.getText())
-                    .originMessageId(message.getMessageId());
+            plainText = message.getText();
         }
-        return builder.build();
+        TextBuilder builder = Text.builder()
+                .chatId(message.getFrom().getId())
+                .text(plainText)
+                .originMessageId(message.getMessageId());
+        text = builder.build();
+        return text;
+    }
+
+    private String handleCoinCommand(String content) {
+        List<String> symbols = Arrays.asList(content.split(","));
+        StringBuilder builder = new StringBuilder();
+        symbols.parallelStream()
+                .forEach(symbol -> {
+                    try {
+                        LatestPrice latestPrice = coinClient.getLatestPrice(symbol);
+                        builder.append(latestPrice.toString());
+                    } catch (Exception e) {
+                        builder.append(symbol.toUpperCase())
+                                .append(":\n")
+                                .append("Invalid pair, please input again!\n")
+                                .append("===============================\n");
+                        e.printStackTrace();
+                    }
+                });
+        return builder.toString();
     }
 
     public void sendMessage(Text text) {
