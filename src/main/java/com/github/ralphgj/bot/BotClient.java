@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -46,11 +47,25 @@ public class BotClient {
     private AtomicBoolean started = new AtomicBoolean(false);
     private AtomicInteger offset = new AtomicInteger();
 
+    private ConcurrentHashMap<Integer, String> watchTasks = new ConcurrentHashMap<>();
+
     @Autowired
     private CoinClient coinClient;
 
+    @Scheduled(fixedDelay = 10000)
+    public void watchTasks() {
+        watchTasks.entrySet().parallelStream()
+                .forEach(entry -> {
+                    String text = handleCoinCommand(entry.getValue());
+                    TextBuilder builder = Text.builder()
+                            .chatId(entry.getKey())
+                            .text(text);
+                    sendMessage(builder.build());
+                });
+    }
+
     @Scheduled(fixedDelay = 100)
-    public void getUpdates() {
+    public void watchUpdates() {
         if (started.compareAndSet(false, true)) {
 
             HttpUrl url = HttpUrl.parse(botUrl + "/getUpdates")
@@ -93,8 +108,11 @@ public class BotClient {
             if (messageEntity.getType().equals(MessageEntityType.BOT_COMMAND.getType())) {
                 String command = message.getText().substring(messageEntity.getOffset(), messageEntity.getLength());
                 String content = message.getText().substring(command.length());
-                if (command.trim().equals("/coin")) {
+                command = command.trim();
+                if (command.equals("/coin")) {
                     plainText = handleCoinCommand(content);
+                } else if(command.equals("/watch")) {
+                    watchTasks.put(message.getFrom().getId(), content);
                 } else {
                     plainText = "Not support the command!";
                 }
