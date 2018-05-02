@@ -52,7 +52,7 @@ public class BotClient {
     @Autowired
     private CoinClient coinClient;
 
-    @Scheduled(fixedDelay = 10000)
+    @Scheduled(fixedDelay = 5 * 60 * 1000)
     public void watchTasks() {
         watchTasks.entrySet().parallelStream()
                 .forEach(entry -> {
@@ -64,7 +64,7 @@ public class BotClient {
                 });
     }
 
-    @Scheduled(fixedDelay = 100)
+    @Scheduled(fixedDelay = 300)
     public void watchUpdates() {
         if (started.compareAndSet(false, true)) {
 
@@ -113,6 +113,15 @@ public class BotClient {
                     plainText = handleCoinCommand(content);
                 } else if(command.equals("/watch")) {
                     watchTasks.put(message.getFrom().getId(), content);
+                } else if(command.equals("/no_watch")) {
+                    watchTasks.remove(message.getFrom().getId());
+                } else if(command.equals("/help")) {
+                    plainText = new StringBuilder()
+                            .append("/help: 获取帮助\n")
+                            .append("/coin: 查询币种, 如, \"/coin btc,eth_btc,eos_btc\", 默认查询对usdt交易\n")
+                            .append("/watch: 定时推送订阅币种, 如, \"/watch  btc,eth_btc,eos_btc\", 每5分钟推送一次\n")
+                            .append("/no_watch: 移除推送\n")
+                            .toString();
                 } else {
                     plainText = "Not support the command!";
                 }

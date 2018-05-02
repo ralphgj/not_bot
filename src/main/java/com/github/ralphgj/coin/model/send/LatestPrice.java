@@ -38,14 +38,18 @@ public class LatestPrice {
 
     public LatestPrice(String symbol, GateIOLatest gateIOLatest, BinanceLatest binanceLatest) {
         this.symbol = symbol;
-        this.gateIOLatestPrice = gateIOLatest.getLast();
-        this.gateIOPercentChange = gateIOLatest.getPercentChange();
-        this.gateIOHigh24Price = gateIOLatest.getHigh24hr();
-        this.gateIOLow24Price = gateIOLatest.getLow24hr();
-        this.binanceLatestPrice = binanceLatest.getLastPrice();
-        this.binancePercentChange = binanceLatest.getPriceChangePercent();
-        this.binanceHigh24Price = binanceLatest.getHighPrice();
-        this.binanceLow24Price = binanceLatest.getLowPrice();
+        if (gateIOLatest != null) {
+            this.gateIOLatestPrice = gateIOLatest.getLast();
+            this.gateIOPercentChange = gateIOLatest.getPercentChange();
+            this.gateIOHigh24Price = gateIOLatest.getHigh24hr();
+            this.gateIOLow24Price = gateIOLatest.getLow24hr();
+        }
+        if (binanceLatest != null) {
+            this.binanceLatestPrice = binanceLatest.getLastPrice();
+            this.binancePercentChange = binanceLatest.getPriceChangePercent();
+            this.binanceHigh24Price = binanceLatest.getHighPrice();
+            this.binanceLow24Price = binanceLatest.getLowPrice();
+        }
     }
 
     @Override
