@@ -116,12 +116,12 @@ public class BotClient {
                 command = command.trim();
                 if (command.equals("/coin")) {
                     plainText = handleCoinCommand(content);
-                } else if(command.equals("/watch")) {
+                } else if (command.equals("/watch")) {
                     watchTasks.put(chatId, content);
                     plainText = handleCoinCommand(content);
-                } else if(command.equals("/no_watch")) {
+                } else if (command.equals("/no_watch")) {
                     watchTasks.remove(chatId);
-                } else if(command.equals("/help") || command.equals("/start")) {
+                } else if (command.equals("/help") || command.equals("/start")) {
                     plainText = new StringBuilder()
                             .append("/start: 见 /help\n")
                             .append("/help: 获取帮助\n")

@@ -57,7 +57,7 @@ public class CoinClient {
         if (!symbol.endsWith(DEFAULT_PAIR_SUFFIX) && !symbol.contains("_")) {
             symbol = symbol + DEFAULT_PAIR_SUFFIX;
         }
-        HttpUrl url = HttpUrl.parse(gateioUrl + "/ticker/" + symbol)
+        HttpUrl url = HttpUrl.parse(gateioUrl + "/api2/1/ticker/" + symbol)
                 .newBuilder()
                 .build();
         String body = excute(url);
@@ -76,7 +76,7 @@ public class CoinClient {
                 .newBuilder()
                 .addQueryParameter("symbol", symbol.replace("_", "").toUpperCase())
                 .build();
-        String body =  excute(url);
+        String body = excute(url);
         if (StringUtils.isEmpty(body)) {
             return null;
         }
