@@ -94,7 +94,7 @@ public class BotClient {
                     offset.set(updates.get(updates.size() - 1).getUpdateId() + 1);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("Request update messages failed: ", e);
             } finally {
                 started.set(false);
             }
@@ -157,7 +157,7 @@ public class BotClient {
                                 .append(":\n")
                                 .append("Invalid pair, please input again!\n")
                                 .append("===============================\n");
-                        e.printStackTrace();
+                        logger.error("Retrieve latest price from remote server failed: ", e);
                     }
                 });
         return builder.toString();
@@ -178,7 +178,7 @@ public class BotClient {
             Response response = client.newCall(request).execute();
             logger.info(response.body().string());
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Send message failed: ", e);
         }
 
     }

@@ -54,6 +54,9 @@ public class CoinClient {
     }
 
     private GateIOLatest getFromGateio(String symbol) {
+        if (symbol.toLowerCase().equals("bcc") || symbol.toLowerCase().startsWith("bcc_")) {
+            symbol = symbol.replace("bcc", "bch");
+        }
         if (!symbol.endsWith(DEFAULT_PAIR_SUFFIX) && !symbol.contains("_")) {
             symbol = symbol + DEFAULT_PAIR_SUFFIX;
         }
@@ -64,11 +67,19 @@ public class CoinClient {
         if (StringUtils.isEmpty(body)) {
             return null;
         }
-        GateIOLatest latest = gson.fromJson(body, GateIOLatest.class);
-        return latest;
+        try {
+            GateIOLatest latest = gson.fromJson(body, GateIOLatest.class);
+            return latest;
+        } catch (Exception e) {
+            logger.error("Serialized failed, response body: " + body, e);
+            return null;
+        }
     }
 
     private BinanceLatest getFromBinance(String symbol) {
+        if (symbol.toLowerCase().equals("bch") || symbol.toLowerCase().startsWith("bch_")) {
+            symbol = symbol.replace("bch", "bcc");
+        }
         if (!symbol.endsWith(DEFAULT_PAIR_SUFFIX) && !symbol.contains("_")) {
             symbol = symbol + DEFAULT_PAIR_SUFFIX;
         }
@@ -80,8 +91,13 @@ public class CoinClient {
         if (StringUtils.isEmpty(body)) {
             return null;
         }
-        BinanceLatest latest = gson.fromJson(body, BinanceLatest.class);
-        return latest;
+        try {
+            BinanceLatest latest = gson.fromJson(body, BinanceLatest.class);
+            return latest;
+        } catch (Exception e) {
+            logger.error("Serialized failed, response body: " + body, e);
+            return null;
+        }
     }
 
     private String excute(HttpUrl url) {
@@ -98,7 +114,7 @@ public class CoinClient {
             logger.info(body);
             return body;
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Request failed: ", e);
         }
         return null;
     }
